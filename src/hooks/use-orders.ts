@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { buildDummyOrders, type Order, type Stage } from "@/data/orders";
 
-const STORAGE_KEY = "fulfillment-hub-orders-v1";
+const STORAGE_KEY = "fulfillment-hub-orders-v2";
 
 function load(): Order[] {
   try {

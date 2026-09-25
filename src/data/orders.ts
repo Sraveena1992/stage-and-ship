@@ -68,7 +68,7 @@ const STAGE_SPLIT: Stage[] = [
   ...Array(6).fill("shipped"),
 ] as Stage[];
 
-const DELAYED_IDS = new Set([4, 9, 17, 26, 33, 45]); // exactly 6 delayed orders
+const DELAYED_IDS = new Set([4, 9, 17, 21, 26, 33]); // exactly 6 delayed orders, none shipped
 const RUSH_COUNT = 11;
 
 export function buildDummyOrders(): Order[] {

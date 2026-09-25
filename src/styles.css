@@ -47,6 +47,9 @@
   --color-stage-packing: var(--stage-packing);
   --color-stage-staging: var(--stage-staging);
   --color-stage-shipped: var(--stage-shipped);
+  --color-courier-bluedart: var(--courier-bluedart);
+  --color-courier-delhivery: var(--courier-delhivery);
+  --color-courier-ups: var(--courier-ups);
   --font-display: "Archivo", "Arial Black", sans-serif;
   --font-body: "Archivo", "Helvetica Neue", sans-serif;
   --font-mono: "IBM Plex Mono", "Courier New", monospace;
@@ -84,6 +87,9 @@
   --stage-packing: oklch(0.55 0.19 300);
   --stage-staging: oklch(0.6 0.16 45);
   --stage-shipped: oklch(0.6 0.14 155);
+  --courier-bluedart: oklch(0.53 0.19 255);
+  --courier-delhivery: oklch(0.68 0.18 50);
+  --courier-ups: oklch(0.43 0.05 70);
 }
 
 @layer base {
@@ -118,6 +124,10 @@
   animation: scan-flash 1.6s ease-out 2;
 }
 
+@utility rush-pulse {
+  animation: rush-pulse 1.35s ease-in-out infinite;
+}
+
 @keyframes scan-flash {
   0%,
   100% {
@@ -140,6 +150,40 @@
   100% {
     transform: scale(1.25);
     opacity: 0;
+  }
+}
+
+@keyframes rush-pulse {
+  0%,
+  100% {
+    transform: scale(1);
+    box-shadow: 0 0 0 0 color-mix(in oklab, var(--color-rush) 45%, transparent);
+  }
+  50% {
+    transform: scale(1.05);
+    box-shadow: 0 0 0 5px transparent;
+  }
+}
+
+@keyframes camera-scan {
+  0%,
+  100% {
+    top: 18%;
+  }
+  50% {
+    top: 78%;
+  }
+}
+
+@utility camera-scan-line {
+  animation: camera-scan 2.2s ease-in-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rush-pulse,
+  .camera-scan-line,
+  .scan-flash {
+    animation: none;
   }
 }
 

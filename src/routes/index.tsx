@@ -1,10 +1,13 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
+import { Barcode, Search, X } from "lucide-react";
 import { COURIERS, PICKUP_TIME, STAGES, STAGE_LABELS, isOrderDelayed, type Order, type Stage } from "@/data/orders";
 import IssueLog from "@/components/IssueLog";
 import { useOrders } from "@/hooks/use-orders";
 import OrderCard from "@/components/OrderCard";
 import ScanModal from "@/components/ScanModal";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -36,16 +39,31 @@ const COLUMN_ACCENT: Record<Stage, { bar: string; chip: string; text: string }> 
   shipped: { bar: "bg-stage-shipped", chip: "bg-stage-shipped", text: "text-stage-shipped" },
 };
 
+const COURIER_ACCENT = {
+  BlueDart: "border-courier-bluedart/40 bg-courier-bluedart text-primary-foreground",
+  Delhivery: "border-courier-delhivery/40 bg-courier-delhivery text-delayed-foreground",
+  UPS: "border-courier-ups/40 bg-courier-ups text-primary-foreground",
+} as const;
+
 function Index() {
   const { orders, moveOrder, advanceOrder, findOrder, resetDay } = useOrders();
   const [scanOpen, setScanOpen] = useState(false);
   const [issueOpen, setIssueOpen] = useState(false);
   const [flashId, setFlashId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<Stage | null>(null);
+  const [search, setSearch] = useState("");
 
   const todaysOrders = 128; // daily intake stat, per warehouse display spec
   const delayedCount = orders.filter((o) => isOrderDelayed(o)).length;
   const inProgress = orders.filter((o) => o.stage !== "shipped").length;
+  const normalizedSearch = search.trim().toLowerCase();
+  const visibleOrders = normalizedSearch
+    ? orders.filter(
+        (order) =>
+          order.id.toLowerCase().includes(normalizedSearch) ||
+          order.customer.toLowerCase().includes(normalizedSearch),
+      )
+    : orders;
 
   const handleScan = (code: string) => {
     const order = findOrder(code);
@@ -67,7 +85,6 @@ function Index() {
 
   return (
     <div className="min-h-screen bg-background">
-      {/* Top bar: title, stats, scan button */}
       <header className="sticky top-0 z-40 border-b border-border bg-card/95 backdrop-blur">
         <div className="mx-auto flex max-w-[1800px] flex-wrap items-center gap-4 px-5 py-4">
           <div className="flex items-center gap-3">
@@ -82,7 +99,32 @@ function Index() {
             </div>
           </div>
 
-          <div className="ml-auto flex flex-wrap items-center gap-3">
+          <div className="order-last flex w-full items-center gap-2 xl:order-none xl:ml-auto xl:w-[340px]">
+            <div className="relative min-w-0 flex-1">
+              <Search className="absolute left-4 top-1/2 size-5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+              <Input
+                type="search"
+                value={search}
+                onChange={(event) => setSearch(event.target.value)}
+                placeholder="Search Order ID or Customer"
+                aria-label="Search Order ID or Customer"
+                className="h-12 rounded-xl border-2 bg-background pl-12 pr-11 text-base font-semibold md:text-base"
+              />
+              {search && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setSearch("")}
+                  className="absolute right-1.5 top-1/2 h-9 w-9 -translate-y-1/2 rounded-lg"
+                  aria-label="Clear search"
+                >
+                  <X className="size-5" />
+                </Button>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
             <Stat label="Today's Orders" value={todaysOrders} tone="text-primary" />
             <Stat label="On the Board" value={inProgress} tone="text-foreground" />
             <Stat
@@ -91,15 +133,15 @@ function Index() {
               tone={delayedCount > 0 ? "text-rush" : "text-muted-foreground"}
               alert={delayedCount > 0}
             />
-            <button
+            <Button
               onClick={() => setScanOpen(true)}
-              className="flex items-center gap-3 rounded-2xl bg-primary px-7 py-4 text-primary-foreground shadow-lg shadow-primary/30 transition-transform hover:brightness-110 active:scale-[0.98]"
+              className="h-auto rounded-2xl px-7 py-4 shadow-lg shadow-primary/30 active:scale-[0.98]"
             >
-              <span className="barcode-stripes h-8 w-12 rounded-md" aria-hidden />
+              <Barcode className="size-8" aria-hidden />
               <span className="text-xl font-extrabold uppercase tracking-wide">
                 Scan Barcode
               </span>
-            </button>
+            </Button>
           </div>
         </div>
       </header>
@@ -108,7 +150,8 @@ function Index() {
       <main className="mx-auto max-w-[1800px] px-5 py-5">
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
           {STAGES.map((stage) => {
-            const columnOrders = orders.filter((o) => o.stage === stage);
+            const totalColumnCount = orders.filter((o) => o.stage === stage).length;
+            const columnOrders = visibleOrders.filter((o) => o.stage === stage);
             const rushCount = columnOrders.filter((o) => o.priority === "rush").length;
             const accent = COLUMN_ACCENT[stage];
             return (
@@ -128,13 +171,13 @@ function Index() {
                 <div className="mb-3 flex items-center gap-2">
                   <span className={`h-8 w-2 rounded-full ${accent.bar}`} aria-hidden />
                   <h2 className={`stage-headline text-lg ${accent.text}`}>
-                    {STAGE_LABELS[stage]}
+                    {STAGE_LABELS[stage]} ({totalColumnCount})
                   </h2>
-                  <span
-                    className={`ml-auto rounded-full px-3 py-1 text-base font-extrabold ${accent.chip}`}
-                  >
-                    {columnOrders.length}
-                  </span>
+                  {normalizedSearch && (
+                    <span className={`ml-auto rounded-full px-3 py-1 text-sm font-extrabold ${accent.chip}`}>
+                      {columnOrders.length} shown
+                    </span>
+                  )}
                 </div>
 
                 <div className="flex flex-1 flex-col gap-3">
@@ -142,14 +185,14 @@ function Index() {
                     ? COURIERS.map((c) => {
                         const group = columnOrders.filter((o) => o.courier === c);
                         return (
-                          <div key={c} className="rounded-2xl border-2 border-stage-staging/40 bg-card/60 p-2">
-                            <div className="mb-2 flex items-center justify-between gap-2 px-1">
-                              <p className="text-lg font-extrabold text-foreground">🚚 {c}</p>
-                              <span className="rounded-lg bg-stage-staging/10 px-2 py-1 text-sm font-bold text-stage-staging">
+                          <div key={c} className="overflow-hidden rounded-2xl border-2 border-stage-staging/40 bg-card/60">
+                            <div className={`flex items-center justify-between gap-2 border-b-2 px-3 py-2 ${COURIER_ACCENT[c]}`}>
+                              <p className="text-lg font-extrabold">{c}</p>
+                              <span className="rounded-lg bg-card/90 px-2 py-1 text-sm font-bold text-foreground">
                                 Pickup {PICKUP_TIME}
                               </span>
                             </div>
-                            <div className="flex flex-col gap-3">
+                            <div className="flex flex-col gap-3 p-2">
                               {group.map((order: Order) => (
                                 <OrderCard
                       key={order.id}
@@ -177,7 +220,7 @@ function Index() {
                   ))}
                   {columnOrders.length === 0 && (
                     <div className="flex flex-1 items-center justify-center rounded-2xl border-2 border-dashed border-border p-6 text-center text-base font-semibold text-muted-foreground">
-                      Drop orders here
+                      {normalizedSearch ? "No matching orders" : "Drop orders here"}
                     </div>
                   )}
                 </div>

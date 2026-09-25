@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
+import { Camera, ScanLine, X } from "lucide-react";
 import { PRODUCT_PHOTOS, STAGE_LABELS, type Order } from "@/data/orders";
+import { Button } from "@/components/ui/button";
 
 interface Props {
   open: boolean;
@@ -52,20 +54,33 @@ export default function ScanModal({ open, onClose, onScan }: Props) {
       >
         <div className="flex items-center justify-between">
           <h2 className="stage-headline text-2xl text-foreground">Scan Barcode</h2>
-          <button
+          <Button
+            variant="secondary"
+            size="icon"
             onClick={onClose}
-            className="rounded-xl bg-secondary px-4 py-2 text-lg font-bold text-secondary-foreground hover:bg-accent"
+            className="h-11 w-11 rounded-xl"
             aria-label="Close scanner"
           >
-            ✕
-          </button>
+            <X className="size-6" />
+          </Button>
         </div>
 
-        <p className="mt-2 text-lg text-muted-foreground">
-          Scan with the gun or type the code, then press Enter.
-        </p>
+        <div className="relative mt-4 aspect-[16/7] overflow-hidden rounded-2xl border-2 border-foreground/20 bg-foreground" aria-hidden>
+          <div className="absolute inset-0 opacity-30 [background-image:radial-gradient(circle_at_center,var(--color-card)_0_1px,transparent_1px)] [background-size:18px_18px]" />
+          <div className="absolute inset-5 rounded-xl border-2 border-primary-foreground/70">
+            <span className="absolute left-0 top-0 h-7 w-7 border-l-4 border-t-4 border-success" />
+            <span className="absolute right-0 top-0 h-7 w-7 border-r-4 border-t-4 border-success" />
+            <span className="absolute bottom-0 left-0 h-7 w-7 border-b-4 border-l-4 border-success" />
+            <span className="absolute bottom-0 right-0 h-7 w-7 border-b-4 border-r-4 border-success" />
+            <span className="camera-scan-line absolute left-4 right-4 h-0.5 bg-rush shadow-[0_0_10px_var(--color-rush)]" />
+          </div>
+          <div className="absolute inset-0 flex items-center justify-center text-primary-foreground">
+            <Camera className="size-12 opacity-80" strokeWidth={1.5} />
+          </div>
+          <p className="absolute bottom-3 left-0 right-0 text-center text-sm font-bold uppercase text-primary-foreground">Point camera at barcode</p>
+        </div>
 
-        <div className="barcode-stripes mt-4 h-3 rounded-full opacity-60" aria-hidden />
+        <p className="mt-3 text-center text-base text-muted-foreground">Camera preview · or enter a code below</p>
 
         <input
           ref={inputRef}
@@ -77,12 +92,13 @@ export default function ScanModal({ open, onClose, onScan }: Props) {
           autoComplete="off"
         />
 
-        <button
+        <Button
           onClick={handleScan}
-          className="mt-3 w-full rounded-2xl bg-primary py-5 text-2xl font-extrabold uppercase tracking-wide text-primary-foreground transition-transform hover:brightness-110 active:scale-[0.99]"
+          className="mt-3 h-auto w-full rounded-2xl py-5 text-xl font-extrabold uppercase tracking-wide active:scale-[0.99]"
         >
-          Find &amp; Move Next Step
-        </button>
+          <ScanLine className="size-6" />
+          Scan &amp; Move Next Step
+        </Button>
 
         {result && (
           <div

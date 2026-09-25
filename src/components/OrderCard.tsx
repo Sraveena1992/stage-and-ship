@@ -1,4 +1,5 @@
 import { isOrderDelayed, PRODUCT_PHOTOS, STAGES, STAGE_LABELS, type Order, type Stage } from "@/data/orders";
+import { Button } from "@/components/ui/button";
 
 const STAGE_ACCENT: Record<Stage, { bar: string; text: string; chip: string }> = {
   received: {
@@ -64,7 +65,7 @@ export default function OrderCard({ order, columnStage, flashing, onAdvance }: P
         </div>
         <div className="flex flex-col items-end gap-1.5">
           {order.priority === "rush" && (
-            <span className="rounded-md bg-rush px-2.5 py-1 text-sm font-extrabold uppercase tracking-wide text-rush-foreground">
+            <span className="rush-pulse rounded-md bg-rush px-2.5 py-1 text-sm font-extrabold uppercase tracking-wide text-rush-foreground">
               Rush
             </span>
           )}
@@ -94,14 +95,15 @@ export default function OrderCard({ order, columnStage, flashing, onAdvance }: P
       </div>
 
       {order.stage !== "shipped" && columnStage === order.stage ? (
-        <button
+        <Button
+          variant="outline"
           onClick={() => onAdvance(order.id)}
-          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-current/30 ${accent.text} px-3 py-2 text-base font-bold uppercase tracking-wide transition-colors hover:bg-secondary`}
+          className={`mt-3 h-auto w-full rounded-xl border-2 border-current/30 ${accent.text} px-3 py-2 text-base font-bold uppercase tracking-wide shadow-none hover:bg-secondary`}
           title={`Move to ${STAGE_LABELS[nextStage]}`}
         >
           Move to {STAGE_LABELS[nextStage]}
           <span aria-hidden>→</span>
-        </button>
+        </Button>
       ) : (
         <p className={`mt-3 text-center text-base font-bold uppercase tracking-wide ${STAGE_ACCENT[order.stage]!.text}`}>
           {order.stage === "shipped" ? "✓ Out the door" : `In ${STAGE_LABELS[order.stage]}`}

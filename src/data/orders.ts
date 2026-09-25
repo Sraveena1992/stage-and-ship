@@ -79,12 +79,12 @@ export function buildDummyOrders(): Order[] {
     return {
       id: `ORD-${10001 + i}`,
       barcode: String(77001000 + i * 37),
-      customer: CUSTOMERS[i],
+      customer: CUSTOMERS[i]!,
       bin: `${zone}-${aisle}-${level}`,
-      product: PRODUCTS[i % PRODUCTS.length],
+      product: PRODUCTS[i % PRODUCTS.length]!,
       photo: i % PRODUCT_PHOTOS.length,
       priority: i < RUSH_COUNT ? "rush" : "standard",
-      stage: STAGE_SPLIT[i],
+      stage: STAGE_SPLIT[i]!,
       delayed: DELAYED_IDS.has(i),
     };
   });

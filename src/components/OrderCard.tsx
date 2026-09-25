@@ -36,10 +36,10 @@ interface Props {
 }
 
 export default function OrderCard({ order, columnStage, flashing, onAdvance }: Props) {
-  const photo = PRODUCT_PHOTOS[order.photo];
+  const photo = PRODUCT_PHOTOS[order.photo]!;
   const flow = STAGES;
-  const nextStage = flow[Math.min(flow.indexOf(order.stage) + 1, flow.length - 1)];
-  const accent = STAGE_ACCENT[order.stage];
+  const nextStage = flow[Math.min(flow.indexOf(order.stage) + 1, flow.length - 1)]!;
+  const accent = STAGE_ACCENT[order.stage]!;
 
   return (
     <article
@@ -103,7 +103,7 @@ export default function OrderCard({ order, columnStage, flashing, onAdvance }: P
           <span aria-hidden>→</span>
         </button>
       ) : (
-        <p className={`mt-3 text-center text-base font-bold uppercase tracking-wide ${STAGE_ACCENT[order.stage].text}`}>
+        <p className={`mt-3 text-center text-base font-bold uppercase tracking-wide ${STAGE_ACCENT[order.stage]!.text}`}>
           {order.stage === "shipped" ? "✓ Out the door" : `In ${STAGE_LABELS[order.stage]}`}
         </p>
       )}

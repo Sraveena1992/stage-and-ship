@@ -93,7 +93,7 @@ export default function ScanModal({ open, onClose, onScan }: Props) {
           >
             {result.ok && result.photo !== undefined && (
               <img
-                src={PRODUCT_PHOTOS[result.photo].src}
+                src={PRODUCT_PHOTOS[result.photo]!.src}
                 alt=""
                 width={56}
                 height={56}

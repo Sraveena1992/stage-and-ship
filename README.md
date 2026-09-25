@@ -1,26 +1,24 @@
-# Fulfillment Flow
+# Fulfillment Flow - Warehouse Kanban
 
-Build a Fulfillment Hub app for e-commerce warehouse. Kanban board with 5 columns: Received, Picking, Packing, Staging, Shipped. Each card show Order ID like ORD-10042, customer name, priority red tag, bin location like BIN: A-12-03, product photo. Top show stats: Today's Orders 128, Delayed 6. Big blue SCAN BARCODE button on top right. Use dummy JSON data for 50 orders. Make UI big, simple, for non-tech workers. Store data in localStorage.
+Live App: https://stage-and-ship.lovable.app
 
-This project was built with [Lovable](https://lovable.dev).
+A Kanban board for e-commerce warehouse floor workers.
 
-**Live app**: https://stage-and-ship.lovable.app
+**5 Columns:** Received | Picking | Packing | Staging | Shipped
 
-## Build with Lovable
+### Features:
+- **Each card:** Order ID (ORD-10042), Customer, Priority RUSH (red), BIN location, Product photo
+- **Top Stats:** Today's Orders 128, Delayed counter, SCAN BARCODE (big blue button)
+- **Unique 1:** Staging grouped by courier - BlueDart, Delhivery with 4 PM pickup time
+- **Unique 2:** RUSH orders delayed >2 hours show orange DELAYED pulsing badge
+- **Usability:** Big, simple UI for non-tech workers, localStorage persistence, drag-drop, search
 
-Continue developing this project in the [Lovable editor](https://lovable.dev/projects/8e53c77d-9e40-50bf-baf7-2f2b4bb50092).
+### Tech Stack:
+React, TypeScript, Tailwind CSS, Lovable
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: every change made in Lovable is committed straight to this repository.
-- **Full ownership**: this code is yours. Push to `main` on GitHub and your changes sync back into Lovable, ready for your next prompt.
-
-## Development
-
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
-
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+### Run Locally:
+```bash
+git clone [https://github.com/Sraveena1992/stage-and-ship.git]
+cd stage-and-ship
+npm install
 npm run dev
-```

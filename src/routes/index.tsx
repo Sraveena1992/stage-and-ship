@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
-import { STAGES, STAGE_LABELS, type Stage } from "@/data/orders";
+import { COURIERS, PICKUP_TIME, STAGES, STAGE_LABELS, isOrderDelayed, type Order, type Stage } from "@/data/orders";
+import IssueLog from "@/components/IssueLog";
 import { useOrders } from "@/hooks/use-orders";
 import OrderCard from "@/components/OrderCard";
 import ScanModal from "@/components/ScanModal";
@@ -38,11 +39,12 @@ const COLUMN_ACCENT: Record<Stage, { bar: string; chip: string; text: string }> 
 function Index() {
   const { orders, moveOrder, advanceOrder, findOrder, resetDay } = useOrders();
   const [scanOpen, setScanOpen] = useState(false);
+  const [issueOpen, setIssueOpen] = useState(false);
   const [flashId, setFlashId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<Stage | null>(null);
 
   const todaysOrders = 128; // daily intake stat, per warehouse display spec
-  const delayedCount = orders.filter((o) => o.delayed && o.stage !== "shipped").length;
+  const delayedCount = orders.filter((o) => isOrderDelayed(o)).length;
   const inProgress = orders.filter((o) => o.stage !== "shipped").length;
 
   const handleScan = (code: string) => {
@@ -136,7 +138,35 @@ function Index() {
                 </div>
 
                 <div className="flex flex-1 flex-col gap-3">
-                  {columnOrders.map((order) => (
+                  {stage === "staging"
+                    ? COURIERS.map((c) => {
+                        const group = columnOrders.filter((o) => o.courier === c);
+                        return (
+                          <div key={c} className="rounded-2xl border-2 border-stage-staging/40 bg-card/60 p-2">
+                            <div className="mb-2 flex items-center justify-between gap-2 px-1">
+                              <p className="text-lg font-extrabold text-foreground">🚚 {c}</p>
+                              <span className="rounded-lg bg-stage-staging/10 px-2 py-1 text-sm font-bold text-stage-staging">
+                                Pickup {PICKUP_TIME}
+                              </span>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                              {group.map((order: Order) => (
+                                <OrderCard
+                      key={order.id}
+                      order={order}
+                      columnStage={stage}
+                      flashing={flashId === order.id}
+                      onAdvance={advanceOrder}
+                    />
+                              ))}
+                              {group.length === 0 && (
+                                <p className="py-3 text-center text-sm font-semibold text-muted-foreground">No boxes yet</p>
+                              )}
+                            </div>
+                          </div>
+                        );
+                      })
+                    : columnOrders.map((order) => (
                     <OrderCard
                       key={order.id}
                       order={order}
@@ -164,15 +194,24 @@ function Index() {
 
         <footer className="mt-4 flex flex-wrap items-center justify-between gap-3 pb-6 text-sm font-medium text-muted-foreground">
           <p>Drag a card to any column, or press its “Move to” button. Saved automatically on this device.</p>
+          <div className="flex flex-wrap gap-3">
+          <button
+            onClick={() => setIssueOpen(true)}
+            className="rounded-2xl bg-delayed px-6 py-4 text-lg font-extrabold uppercase tracking-wide text-delayed-foreground shadow-md hover:brightness-105 active:scale-[0.98]"
+          >
+            ⚠ Issue Log
+          </button>
           <button
             onClick={resetDay}
             className="rounded-xl border-2 border-border bg-card px-4 py-2 text-sm font-bold uppercase tracking-wide text-foreground hover:bg-secondary"
           >
             Reset demo day
           </button>
+          </div>
         </footer>
       </main>
 
+      <IssueLog open={issueOpen} onClose={() => setIssueOpen(false)} />
       <ScanModal open={scanOpen} onClose={() => setScanOpen(false)} onScan={handleScan} />
     </div>
   );

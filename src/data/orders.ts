@@ -24,6 +24,19 @@ export interface Order {
   priority: "rush" | "standard";
   stage: Stage;
   delayed: boolean;
+  courier: Courier;
+  stageSince: number; // ms timestamp when order entered its current stage
+}
+
+export const COURIERS = ["Delhivery", "BlueDart", "UPS"] as const;
+export type Courier = (typeof COURIERS)[number];
+export const PICKUP_TIME = "4:00 PM";
+const TWO_HOURS = 2 * 60 * 60 * 1000;
+
+/** Seeded delay flag, or RUSH order waiting in Received for more than 2 hours. */
+export function isOrderDelayed(o: Order, now = Date.now()): boolean {
+  if (o.stage === "shipped") return false;
+  return o.delayed || (o.priority === "rush" && o.stage === "received" && now - o.stageSince > TWO_HOURS);
 }
 
 export const PRODUCT_PHOTOS = [
@@ -72,6 +85,7 @@ const DELAYED_IDS = new Set([4, 9, 17, 21, 26, 33]); // exactly 6 delayed orders
 const RUSH_COUNT = 11;
 
 export function buildDummyOrders(): Order[] {
+  const now = Date.now();
   return Array.from({ length: 50 }, (_, i) => {
     const zone = ZONES[i % ZONES.length];
     const aisle = String((i * 7) % 24 + 1).padStart(2, "0");
@@ -86,6 +100,9 @@ export function buildDummyOrders(): Order[] {
       priority: i < RUSH_COUNT ? "rush" : "standard",
       stage: STAGE_SPLIT[i]!,
       delayed: DELAYED_IDS.has(i),
+      courier: COURIERS[i % COURIERS.length]!,
+      // some rush orders have been sitting in Received 2.5h+ so the warning shows
+      stageSince: now - (i % 3 === 0 ? 150 + i * 5 : 20 + i * 3) * 60_000,
     };
   });
 }

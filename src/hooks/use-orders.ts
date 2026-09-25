@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { buildDummyOrders, type Order, type Stage } from "@/data/orders";
 
-const STORAGE_KEY = "fulfillment-hub-orders-v2";
+const STORAGE_KEY = "fulfillment-hub-orders-v3";
 
 function load(): Order[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length === 50) return parsed as Order[];
+      if (Array.isArray(parsed) && parsed.length === 50 && parsed[0]?.courier) return parsed as Order[];
     }
   } catch {
     // corrupted storage -> reseed
@@ -33,7 +33,7 @@ export function useOrders() {
 
   const moveOrder = (id: string, stage: Stage) => {
     setOrders((prev) =>
-      prev.map((o) => (o.id === id ? { ...o, stage } : o)),
+      prev.map((o) => (o.id === id ? { ...o, stage, stageSince: o.stage === stage ? o.stageSince : Date.now() } : o)),
     );
   };
 
@@ -42,7 +42,7 @@ export function useOrders() {
     if (!order) return undefined;
     const idx = ["received", "picking", "packing", "staging", "shipped"].indexOf(order.stage);
     const next = ["received", "picking", "packing", "staging", "shipped"][Math.min(idx + 1, 4)];
-    const updated = { ...order, stage: next as Stage };
+    const updated = { ...order, stage: next as Stage, stageSince: Date.now() };
     setOrders((prev) => prev.map((o) => (o.id === updated.id ? updated : o)));
     return updated;
   };

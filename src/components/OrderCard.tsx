@@ -1,4 +1,4 @@
-import { PRODUCT_PHOTOS, STAGES, STAGE_LABELS, type Order, type Stage } from "@/data/orders";
+import { isOrderDelayed, PRODUCT_PHOTOS, STAGES, STAGE_LABELS, type Order, type Stage } from "@/data/orders";
 
 const STAGE_ACCENT: Record<Stage, { bar: string; text: string; chip: string }> = {
   received: {
@@ -68,7 +68,7 @@ export default function OrderCard({ order, columnStage, flashing, onAdvance }: P
               Rush
             </span>
           )}
-          {order.delayed && (
+          {isOrderDelayed(order) && (
             <span className="rounded-md bg-delayed px-2.5 py-1 text-sm font-extrabold uppercase tracking-wide text-delayed-foreground">
               Delayed
             </span>

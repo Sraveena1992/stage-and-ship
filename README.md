@@ -18,7 +18,7 @@ React, TypeScript, Tailwind CSS, Lovable
 
 ### Run Locally:
 ```bash
-git clone [https://github.com/Sraveena1992/stage-and-ship.git]
+git clone https://github.com/Sraveena1992/stage-and-ship.git
 cd stage-and-ship
 npm install
 npm run dev

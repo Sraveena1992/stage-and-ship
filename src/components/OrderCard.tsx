@@ -1,30 +1,45 @@
-import { STAGE_LABELS, type Order } from "@/data/orders";
+import { PRODUCT_PHOTOS, STAGES, STAGE_LABELS, type Order, type Stage } from "@/data/orders";
 
-const STAGE_ACCENTS: Record<string, string> = {
-  received: "bg-stage-received",
-  picking: "bg-stage-picking",
-  packing: "bg-stage-packing",
-  staging: "bg-stage-staging",
-  shipped: "bg-stage-shipped",
-};
-
-const STAGE_TEXT: Record<string, string> = {
-  received: "text-stage-received",
-  picking: "text-stage-picking",
-  packing: "text-stage-packing",
-  staging: "text-stage-staging",
-  shipped: "text-stage-shipped",
+const STAGE_ACCENT: Record<Stage, { bar: string; text: string; chip: string }> = {
+  received: {
+    bar: "bg-stage-received",
+    text: "text-stage-received",
+    chip: "bg-stage-received/10 text-stage-received",
+  },
+  picking: {
+    bar: "bg-stage-picking",
+    text: "text-stage-picking",
+    chip: "bg-stage-picking/15 text-stage-picking",
+  },
+  packing: {
+    bar: "bg-stage-packing",
+    text: "text-stage-packing",
+    chip: "bg-stage-packing/10 text-stage-packing",
+  },
+  staging: {
+    bar: "bg-stage-staging",
+    text: "text-stage-staging",
+    chip: "bg-stage-staging/10 text-stage-staging",
+  },
+  shipped: {
+    bar: "bg-stage-shipped",
+    text: "text-stage-shipped",
+    chip: "bg-stage-shipped/10 text-stage-shipped",
+  },
 };
 
 interface Props {
   order: Order;
-  columnStage: string;
-  flashing?: boolean;
+  columnStage: Stage;
+  flashing: boolean;
   onAdvance: (id: string) => void;
 }
 
 export default function OrderCard({ order, columnStage, flashing, onAdvance }: Props) {
-  const photo = PHOTOS[order.photo];
+  const photo = PRODUCT_PHOTOS[order.photo];
+  const flow = STAGES;
+  const nextStage = flow[Math.min(flow.indexOf(order.stage) + 1, flow.length - 1)];
+  const accent = STAGE_ACCENT[order.stage];
 
   return (
     <article
@@ -33,9 +48,9 @@ export default function OrderCard({ order, columnStage, flashing, onAdvance }: P
         e.dataTransfer.setData("text/plain", order.id);
         e.dataTransfer.effectAllowed = "move";
       }}
-      className={`card-shadow group cursor-grab rounded-2xl border-2 border-border bg-card p-4 active:cursor-grabbing ${
-        flashing ? "scan-flash outline-4 outline-offset-2" : ""
-      } ${order.priority === "rush" ? "border-rush/60" : ""}`}
+      className={`card-shadow group cursor-grab rounded-2xl border-2 bg-card p-4 active:cursor-grabbing ${
+        order.priority === "rush" ? "border-rush/60" : "border-border"
+      } ${flashing ? "scan-flash outline-4 outline-offset-2" : ""}`}
       aria-label={`${order.id}, ${order.customer}, ${order.product}`}
     >
       <div className="flex items-start justify-between gap-3">
@@ -78,30 +93,20 @@ export default function OrderCard({ order, columnStage, flashing, onAdvance }: P
         </div>
       </div>
 
-      {order.stage !== "shipped" && (
+      {order.stage !== "shipped" && columnStage === order.stage ? (
         <button
           onClick={() => onAdvance(order.id)}
-          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 px-3 py-2 text-base font-bold uppercase tracking-wide transition-colors ${STAGE_TEXT[order.stage]} border-current/30 hover:bg-secondary`}
-          title={`Move to ${nextLabel(order.stage)}`}
+          className={`mt-3 flex w-full items-center justify-center gap-2 rounded-xl border-2 border-current/30 ${accent.text} px-3 py-2 text-base font-bold uppercase tracking-wide transition-colors hover:bg-secondary`}
+          title={`Move to ${STAGE_LABELS[nextStage]}`}
         >
-          Move to {nextLabel(order.stage)}
+          Move to {STAGE_LABELS[nextStage]}
           <span aria-hidden>→</span>
         </button>
-      )}
-      {order.stage === "shipped" && columnStage === "shipped" && (
-        <p className="mt-3 text-center text-base font-bold uppercase tracking-wide text-stage-shipped">
-          ✓ Out the door
+      ) : (
+        <p className={`mt-3 text-center text-base font-bold uppercase tracking-wide ${STAGE_ACCENT[order.stage].text}`}>
+          {order.stage === "shipped" ? "✓ Out the door" : `In ${STAGE_LABELS[order.stage]}`}
         </p>
       )}
     </article>
   );
 }
-
-import { PRODUCT_PHOTOS as PHOTOS } from "@/data/orders";
-
-function nextLabel(stage: Order["stage"]) {
-  const flow = ["Received", "Picking", "Packing", "Staging", "Shipped"];
-  return flow[flow.indexOf(STAGE_LABELS[stage]) + 1] ?? "";
-}
-
-export { STAGE_ACCENTS };

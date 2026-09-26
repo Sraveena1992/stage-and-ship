@@ -2,6 +2,7 @@ import { useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { Barcode, Search, X } from "lucide-react";
 import { COURIERS, PICKUP_TIME, STAGES, STAGE_LABELS, isOrderDelayed, type Order, type Stage } from "@/data/orders";
+import AllOrdersModal from "@/components/AllOrdersModal";
 import IssueLog from "@/components/IssueLog";
 import { useOrders } from "@/hooks/use-orders";
 import OrderCard from "@/components/OrderCard";
@@ -45,10 +46,19 @@ const COURIER_ACCENT = {
   UPS: "border-courier-ups/40 bg-courier-ups text-primary-foreground",
 } as const;
 
+type KpiFilter = "board" | "delayed";
+
+const FILTER_TOOLTIPS: Record<KpiFilter, string> = {
+  board: "Filtering: On the Board",
+  delayed: "Filtering: Delayed Orders",
+};
+
 function Index() {
   const { orders, moveOrder, advanceOrder, findOrder, resetDay } = useOrders();
   const [scanOpen, setScanOpen] = useState(false);
   const [issueOpen, setIssueOpen] = useState(false);
+  const [allOpen, setAllOpen] = useState(false);
+  const [filter, setFilter] = useState<KpiFilter | null>(null);
   const [flashId, setFlashId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<Stage | null>(null);
   const [search, setSearch] = useState("");
@@ -57,13 +67,18 @@ function Index() {
   const delayedCount = orders.filter((o) => isOrderDelayed(o)).length;
   const inProgress = orders.filter((o) => o.stage !== "shipped").length;
   const normalizedSearch = search.trim().toLowerCase();
-  const visibleOrders = normalizedSearch
+  const searchedOrders = normalizedSearch
     ? orders.filter(
         (order) =>
           order.id.toLowerCase().includes(normalizedSearch) ||
           order.customer.toLowerCase().includes(normalizedSearch),
       )
     : orders;
+  const visibleOrders = filter
+    ? searchedOrders.filter((o) => (filter === "board" ? o.stage !== "shipped" : isOrderDelayed(o)))
+    : searchedOrders;
+
+  const toggleFilter = (f: KpiFilter) => setFilter((prev) => (prev === f ? null : f));
 
   const handleScan = (code: string) => {
     const order = findOrder(code);
@@ -82,6 +97,8 @@ function Index() {
     const id = e.dataTransfer.getData("text/plain");
     if (id) moveOrder(id, stage);
   };
+
+  const shownStages = filter === "board" ? STAGES.filter((s) => s !== "shipped") : STAGES;
 
   return (
     <div className="min-h-screen bg-background">
@@ -125,13 +142,30 @@ function Index() {
           </div>
 
           <div className="flex flex-wrap items-center gap-3">
-            <Stat label="Today's Orders" value={todaysOrders} tone="text-primary" />
-            <Stat label="On the Board" value={inProgress} tone="text-foreground" />
+            <Stat
+              label="Today's Orders"
+              value={todaysOrders}
+              tone="text-primary"
+              active={allOpen}
+              tooltip="Showing: All Orders"
+              onClick={() => setAllOpen((o) => !o)}
+            />
+            <Stat
+              label="On the Board"
+              value={inProgress}
+              tone="text-foreground"
+              active={filter === "board"}
+              tooltip={FILTER_TOOLTIPS.board}
+              onClick={() => toggleFilter("board")}
+            />
             <Stat
               label="Delayed"
               value={delayedCount}
               tone={delayedCount > 0 ? "text-rush" : "text-muted-foreground"}
               alert={delayedCount > 0}
+              active={filter === "delayed"}
+              tooltip={FILTER_TOOLTIPS.delayed}
+              onClick={() => toggleFilter("delayed")}
             />
             <Button
               onClick={() => setScanOpen(true)}
@@ -148,8 +182,25 @@ function Index() {
 
       {/* Kanban board */}
       <main className="mx-auto max-w-[1800px] px-5 py-5">
+        {filter && (
+          <div className="mb-3 flex flex-wrap items-center justify-between gap-3 rounded-2xl border-2 border-primary bg-primary/10 px-5 py-3">
+            <p className="text-lg font-extrabold text-foreground">
+              {filter === "delayed"
+                ? `⚠ Showing only Delayed orders (${visibleOrders.length})`
+                : `Showing orders on the board — Received to Staging (${visibleOrders.length})`}
+            </p>
+            <Button
+              variant="outline"
+              onClick={() => setFilter(null)}
+              className="rounded-xl border-2 px-4 py-2 text-base font-bold uppercase tracking-wide"
+            >
+              Clear filter ✕
+            </Button>
+          </div>
+        )}
+
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-          {STAGES.map((stage) => {
+          {shownStages.map((stage) => {
             const totalColumnCount = orders.filter((o) => o.stage === stage).length;
             const columnOrders = visibleOrders.filter((o) => o.stage === stage);
             const rushCount = columnOrders.filter((o) => o.priority === "rush").length;
@@ -171,7 +222,7 @@ function Index() {
                 <div className="mb-3 flex items-center gap-2">
                   <span className={`h-8 w-2 rounded-full ${accent.bar}`} aria-hidden />
                   <h2 className={`stage-headline text-lg ${accent.text}`}>
-                    {STAGE_LABELS[stage]} ({totalColumnCount})
+                    {STAGE_LABELS[stage]} ({filter ? columnOrders.length : totalColumnCount})
                   </h2>
                   {normalizedSearch && (
                     <span className={`ml-auto rounded-full px-3 py-1 text-sm font-extrabold ${accent.chip}`}>
@@ -195,12 +246,13 @@ function Index() {
                             <div className="flex flex-col gap-3 p-2">
                               {group.map((order: Order) => (
                                 <OrderCard
-                      key={order.id}
-                      order={order}
-                      columnStage={stage}
-                      flashing={flashId === order.id}
-                      onAdvance={advanceOrder}
-                    />
+                                  key={order.id}
+                                  order={order}
+                                  columnStage={stage}
+                                  flashing={flashId === order.id}
+                                  onAdvance={advanceOrder}
+                                  highlight={filter ?? undefined}
+                                />
                               ))}
                               {group.length === 0 && (
                                 <p className="py-3 text-center text-sm font-semibold text-muted-foreground">No boxes yet</p>
@@ -210,17 +262,18 @@ function Index() {
                         );
                       })
                     : columnOrders.map((order) => (
-                    <OrderCard
-                      key={order.id}
-                      order={order}
-                      columnStage={stage}
-                      flashing={flashId === order.id}
-                      onAdvance={advanceOrder}
-                    />
-                  ))}
+                      <OrderCard
+                        key={order.id}
+                        order={order}
+                        columnStage={stage}
+                        flashing={flashId === order.id}
+                        onAdvance={advanceOrder}
+                        highlight={filter ?? undefined}
+                      />
+                    ))}
                   {columnOrders.length === 0 && (
                     <div className="flex flex-1 items-center justify-center rounded-2xl border-2 border-dashed border-border p-6 text-center text-base font-semibold text-muted-foreground">
-                      {normalizedSearch ? "No matching orders" : "Drop orders here"}
+                      {normalizedSearch || filter ? "No matching orders" : "Drop orders here"}
                     </div>
                   )}
                 </div>
@@ -254,6 +307,7 @@ function Index() {
         </footer>
       </main>
 
+      <AllOrdersModal open={allOpen} onClose={() => setAllOpen(false)} orders={orders} />
       <IssueLog open={issueOpen} onClose={() => setIssueOpen(false)} />
       <ScanModal open={scanOpen} onClose={() => setScanOpen(false)} onScan={handleScan} />
     </div>
@@ -265,22 +319,48 @@ function Stat({
   value,
   tone,
   alert,
+  active,
+  tooltip,
+  onClick,
 }: {
   label: string;
   value: number;
   tone: string;
   alert?: boolean;
+  active?: boolean;
+  tooltip?: string;
+  onClick?: () => void;
 }) {
   return (
-    <div
-      className={`rounded-2xl border-2 px-4 py-2 text-center ${
-        alert ? "border-rush/50 bg-rush/10" : "border-border bg-background"
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      title={tooltip}
+      className={`relative rounded-2xl border-2 px-4 py-2 text-center transition-colors ${
+        active
+          ? "border-primary bg-primary/10 ring-4 ring-primary/30"
+          : alert
+            ? "border-rush/50 bg-rush/10 hover:border-rush"
+            : "border-border bg-background hover:border-primary/60"
       }`}
     >
       <p className={`text-3xl font-extrabold leading-none ${tone}`}>{value}</p>
       <p className="mt-1 text-xs font-bold uppercase tracking-wide text-muted-foreground">
         {label}
       </p>
-    </div>
+      {active && tooltip && (
+        <span
+          role="status"
+          className="absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-primary px-3 py-1.5 text-sm font-extrabold text-primary-foreground shadow-lg"
+        >
+          {tooltip}
+          <span
+            aria-hidden
+            className="absolute bottom-full left-1/2 -translate-x-1/2 border-4 border-transparent border-b-primary"
+          />
+        </span>
+      )}
+    </button>
   );
 }

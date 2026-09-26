@@ -35,7 +35,7 @@ interface Props {
   flashing: boolean;
   onAdvance: (id: string) => void;
   /** Active KPI filter — gives matching cards a colored highlight ring. */
-  highlight?: "board" | "delayed";
+  highlight?: "board" | "delayed" | undefined;
 }
 
 const HIGHLIGHT_RING = {

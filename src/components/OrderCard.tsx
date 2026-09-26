@@ -34,9 +34,16 @@ interface Props {
   columnStage: Stage;
   flashing: boolean;
   onAdvance: (id: string) => void;
+  /** Active KPI filter — gives matching cards a colored highlight ring. */
+  highlight?: "board" | "delayed" | undefined;
 }
 
-export default function OrderCard({ order, columnStage, flashing, onAdvance }: Props) {
+const HIGHLIGHT_RING = {
+  board: "ring-4 ring-primary/70",
+  delayed: "ring-4 ring-delayed",
+} as const;
+
+export default function OrderCard({ order, columnStage, flashing, onAdvance, highlight }: Props) {
   const photo = PRODUCT_PHOTOS[order.photo]!;
   const flow = STAGES;
   const nextStage = flow[Math.min(flow.indexOf(order.stage) + 1, flow.length - 1)]!;
@@ -51,7 +58,7 @@ export default function OrderCard({ order, columnStage, flashing, onAdvance }: P
       }}
       className={`card-shadow group cursor-grab rounded-2xl border-2 bg-card p-4 active:cursor-grabbing ${
         order.priority === "rush" ? "border-rush/60" : "border-border"
-      } ${flashing ? "scan-flash outline-4 outline-offset-2" : ""}`}
+      } ${highlight ? HIGHLIGHT_RING[highlight] : ""} ${flashing ? "scan-flash outline-4 outline-offset-2" : ""}`}
       aria-label={`${order.id}, ${order.customer}, ${order.product}`}
     >
       <div className="flex items-start justify-between gap-3">

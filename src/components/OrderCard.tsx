@@ -34,9 +34,16 @@ interface Props {
   columnStage: Stage;
   flashing: boolean;
   onAdvance: (id: string) => void;
+  /** Active KPI filter — gives matching cards a colored highlight ring. */
+  highlight?: "board" | "delayed";
 }
 
-export default function OrderCard({ order, columnStage, flashing, onAdvance }: Props) {
+const HIGHLIGHT_RING = {
+  board: "ring-4 ring-primary/70",
+  delayed: "ring-4 ring-delayed",
+} as const;
+
+export default function OrderCard({ order, columnStage, flashing, onAdvance, highlight }: Props) {
   const photo = PRODUCT_PHOTOS[order.photo]!;
   const flow = STAGES;
   const nextStage = flow[Math.min(flow.indexOf(order.stage) + 1, flow.length - 1)]!;

@@ -58,7 +58,7 @@ export default function OrderCard({ order, columnStage, flashing, onAdvance, hig
       }}
       className={`card-shadow group cursor-grab rounded-2xl border-2 bg-card p-4 active:cursor-grabbing ${
         order.priority === "rush" ? "border-rush/60" : "border-border"
-      } ${flashing ? "scan-flash outline-4 outline-offset-2" : ""}`}
+      } ${highlight ? HIGHLIGHT_RING[highlight] : ""} ${flashing ? "scan-flash outline-4 outline-offset-2" : ""}`}
       aria-label={`${order.id}, ${order.customer}, ${order.product}`}
     >
       <div className="flex items-start justify-between gap-3">

@@ -1,36 +1,68 @@
 # Fulfillment Flow - Warehouse Kanban
 
-**Live App:** https://stage-ship-flow.lovable.app  
-**GitHub:** https://github.com/Sraveena1992/stage-and-ship
+**Warehouse Floor Board for End-to-End Order Fulfillment**
 
-A Kanban board for e-commerce warehouse floor workers - designed for speed on the warehouse floor.
+### 🔗 Live Demo
+- **Live App:** [stage-ship-flow.lovable.app](https://stage-ship-flow.lovable.app)
+- **Loom Demo (4 min):** [Watch Video Demo](https://www.loom.com/share/d548fa0077b642c398f0442f1ca2512c)
 
-### 5 Columns: Received | Picking | Packing | Staging | Shipped
+---
 
-### 🚀 NEW - Clickable KPIs (Hero Feature):
-- **128 Today's Orders:** Click to show all orders
-- **44 On The Board:** Click to show only active orders (hides Shipped)
-- **9 Delayed:** Click to show only RUSH orders stuck >2 hrs (orange filter + Clear Filter banner)
-- Active KPI turns blue ring + light blue background
+### 📦 Overview
+Fulfillment Flow solves real warehouse problems of tracking 100+ daily orders across 5 stages. Floor staff can instantly see what is Received, what needs Picking, what is Delayed/RUSH, and scan barcodes to move orders seamlessly.
 
-### 💳 NEW - Clickable Order Detail Modal:
-- Click any Order ID (e.g., ORD-10001 / Maya Patel) opens customer detail window
-- Shows: Phone (+91), Email, Address, Order Value in ₹ (₹1,261), Product, BIN, Courier (UPS/BlueDart), Stage, Barcode
-- Actions: CALL CUSTOMER, VIEW LOCATION, MOVE TO NEXT STAGE
-- Fixed: Handles old localStorage orders gracefully
+---
 
-### Features:
-- **Each card:** Order ID, Customer, Priority RUSH (red badge), DELAYED (orange pulsing), BIN location (A-01-01), Product photo
-- **Top Stats:** Today's Orders, On The Board, Delayed counter, SCAN BARCODE
-- **Search:** Search by Order ID or Customer name
-- **Staging:** Grouped by courier - BlueDart, Delhivery with 4 PM pickup time
+### ✨ Key Features (Built & Shown in Demo)
 
-### Tech Stack:
-React + TypeScript + Tailwind CSS + Lovable + LocalStorage
+1. **5-Stage Kanban Board**
+   - Workflow: `RECEIVED (11)` ➔ `PICKING (13)` ➔ `PACKING (11)` ➔ `STAGING (6)` ➔ `SHIPPED (9)`
+   - Visual workflow with clear, color-coded columns.
 
-### Run Locally:
+2. **Clickable KPI Cards**
+   - Metrics: **128** Today's Orders | **41** On The Board | **12** Delayed
+   - Click on any KPI to filter the board instantly (e.g., click **DELAYED** to see urgent orders).
+
+3. **Smart Order Cards**
+   - High-visibility cards displaying Order ID (`ORD-10004`), Customer Name (`Liam O'Connor`), Product (`Canvas Backpack`), BIN Location (`D-22-04`), Product Image, and `RUSH` / `DELAYED` tags.
+
+4. **Order Detail Modal (Hero Feature)**
+   - Click any order card to view complete context: Order Value (`₹2,898`), BIN, Barcode (`77001111`), Address, Email, and Timestamp.
+   - **Quick Actions:** `CALL CUSTOMER`, `VIEW LOCATION`, and `MOVE TO NEXT STAGE`.
+
+5. **Barcode Scanning Workflow**
+   - **SCAN BARCODE** button in header for fast floor operations using handheld scanners.
+
+6. **One-Click Stage Transitions**
+   - Quick action buttons on each card to shift orders instantly across stages.
+
+---
+
+### 🛠 Tech Stack
+- **Frontend:** React, TypeScript, Vite
+- **Styling:** Tailwind CSS
+- **State/Storage:** LocalStorage
+- **Platform & Hosting:** Lovable.dev
+- **Version Control:** GitHub
+
+---
+
+### 🎯 Problem Solved
+Warehouses waste valuable time locating delayed items. This board gives floor managers instant visibility—12 Delayed orders are highlighted in **RED**, RUSH orders are prioritized, and precise BIN locations guide pickers directly.
+
+---
+
+### 💻 Run Locally
+
 ```bash
+# Clone the repository
 git clone- https://github.com/Sraveena1992/stage-and-ship.git
+
+# Navigate to project directory
 cd stage-and-ship
+
+# Install dependencies
 npm install
+
+# Start development server
 npm run dev

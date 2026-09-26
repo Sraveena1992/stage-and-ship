@@ -34,6 +34,7 @@ interface Props {
   columnStage: Stage;
   flashing: boolean;
   onAdvance: (id: string) => void;
+  onOpenDetails: (order: Order) => void;
   /** Active KPI filter — gives matching cards a colored highlight ring. */
   highlight?: "board" | "delayed" | undefined;
 }
@@ -43,7 +44,7 @@ const HIGHLIGHT_RING = {
   delayed: "ring-4 ring-delayed",
 } as const;
 
-export default function OrderCard({ order, columnStage, flashing, onAdvance, highlight }: Props) {
+export default function OrderCard({ order, columnStage, flashing, onAdvance, onOpenDetails, highlight }: Props) {
   const photo = PRODUCT_PHOTOS[order.photo]!;
   const flow = STAGES;
   const nextStage = flow[Math.min(flow.indexOf(order.stage) + 1, flow.length - 1)]!;
@@ -56,7 +57,8 @@ export default function OrderCard({ order, columnStage, flashing, onAdvance, hig
         e.dataTransfer.setData("text/plain", order.id);
         e.dataTransfer.effectAllowed = "move";
       }}
-      className={`card-shadow group cursor-grab rounded-2xl border-2 bg-card p-4 active:cursor-grabbing ${
+      onClick={() => onOpenDetails(order)}
+      className={`card-shadow group cursor-pointer rounded-2xl border-2 bg-card p-4 transition-colors hover:bg-secondary active:cursor-grabbing ${
         order.priority === "rush" ? "border-rush/60" : "border-border"
       } ${highlight ? HIGHLIGHT_RING[highlight] : ""} ${flashing ? "scan-flash outline-4 outline-offset-2" : ""}`}
       aria-label={`${order.id}, ${order.customer}, ${order.product}`}
@@ -104,7 +106,10 @@ export default function OrderCard({ order, columnStage, flashing, onAdvance, hig
       {order.stage !== "shipped" && columnStage === order.stage ? (
         <Button
           variant="outline"
-          onClick={() => onAdvance(order.id)}
+          onClick={(e) => {
+            e.stopPropagation();
+            onAdvance(order.id);
+          }}
           className={`mt-3 h-auto w-full rounded-xl border-2 border-current/30 ${accent.text} px-3 py-2 text-base font-bold uppercase tracking-wide shadow-none hover:bg-secondary`}
           title={`Move to ${STAGE_LABELS[nextStage]}`}
         >

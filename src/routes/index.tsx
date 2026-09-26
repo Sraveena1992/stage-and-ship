@@ -3,6 +3,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { Barcode, Search, X } from "lucide-react";
 import { COURIERS, PICKUP_TIME, STAGES, STAGE_LABELS, isOrderDelayed, type Order, type Stage } from "@/data/orders";
 import AllOrdersModal from "@/components/AllOrdersModal";
+import CustomerDetailsModal from "@/components/CustomerDetailsModal";
 import IssueLog from "@/components/IssueLog";
 import { useOrders } from "@/hooks/use-orders";
 import OrderCard from "@/components/OrderCard";
@@ -62,6 +63,7 @@ function Index() {
   const [flashId, setFlashId] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState<Stage | null>(null);
   const [search, setSearch] = useState("");
+  const [detailsOrder, setDetailsOrder] = useState<Order | null>(null);
 
   const todaysOrders = 128; // daily intake stat, per warehouse display spec
   const delayedCount = orders.filter((o) => isOrderDelayed(o)).length;
@@ -251,6 +253,7 @@ function Index() {
                                   columnStage={stage}
                                   flashing={flashId === order.id}
                                   onAdvance={advanceOrder}
+                                  onOpenDetails={setDetailsOrder}
                                   highlight={filter ?? undefined}
                                 />
                               ))}
@@ -268,6 +271,7 @@ function Index() {
                         columnStage={stage}
                         flashing={flashId === order.id}
                         onAdvance={advanceOrder}
+                        onOpenDetails={setDetailsOrder}
                         highlight={filter ?? undefined}
                       />
                     ))}
@@ -308,6 +312,11 @@ function Index() {
       </main>
 
       <AllOrdersModal open={allOpen} onClose={() => setAllOpen(false)} orders={orders} />
+      <CustomerDetailsModal
+        order={detailsOrder ? (orders.find((o) => o.id === detailsOrder.id) ?? detailsOrder) : null}
+        onClose={() => setDetailsOrder(null)}
+        onAdvance={advanceOrder}
+      />
       <IssueLog open={issueOpen} onClose={() => setIssueOpen(false)} />
       <ScanModal open={scanOpen} onClose={() => setScanOpen(false)} onScan={handleScan} />
     </div>

@@ -1,14 +1,14 @@
 import { useEffect, useState } from "react";
 import { buildDummyOrders, type Order, type Stage } from "@/data/orders";
 
-const STORAGE_KEY = "fulfillment-hub-orders-v3";
+const STORAGE_KEY = "fulfillment-hub-orders-v4";
 
 function load(): Order[] {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length === 50 && parsed[0]?.courier) return parsed as Order[];
+      if (Array.isArray(parsed) && parsed.length === 50 && parsed[0]?.courier && parsed[0]?.phone) return parsed as Order[];
     }
   } catch {
     // corrupted storage -> reseed

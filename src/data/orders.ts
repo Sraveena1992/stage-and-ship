@@ -26,6 +26,9 @@ export interface Order {
   delayed: boolean;
   courier: Courier;
   stageSince: number; // ms timestamp when order entered its current stage
+  phone: string; // masked, e.g. +91 98xxxxxx10
+  address: string;
+  orderTime: number; // ms timestamp when the order was placed
 }
 
 export const COURIERS = ["Delhivery", "BlueDart", "UPS"] as const;
@@ -103,6 +106,9 @@ export function buildDummyOrders(): Order[] {
       courier: COURIERS[i % COURIERS.length]!,
       // some rush orders have been sitting in Received 2.5h+ so the warning shows
       stageSince: now - (i % 3 === 0 ? 150 + i * 5 : 20 + i * 3) * 60_000,
+      phone: `+91 9${8 - (i % 3)}xxxxxx${String(10 + ((i * 7) % 89))}`,
+      address: `${12 + i} ${["MG Road", "Park Street", "Anna Salai", "FC Road"][i % 4]}, ${["Bengaluru", "Kolkata", "Chennai", "Pune"][i % 4]} ${560001 + i * 37}`,
+      orderTime: now - (180 + i * 23) * 60_000,
     };
   });
 }
